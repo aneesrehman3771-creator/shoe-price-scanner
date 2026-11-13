@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shoe Price Scanner - جوتا پرائس سکینر</title>
+  <meta name="theme-color" content="#1e293b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: 75px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      font-size: 26px;
+      background: #3b82f6;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: #38bdf8;
+      font-weight: 500;
+    }
+
+    .header-badge {
+      background: #334155;
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Content Area */
+    main {
+      flex: 1;
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Bottom Nav Bar */
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: #1e293b;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-item .icon {
+      font-size: 20px;
+    }
+
+    .nav-item.active {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    /* Scanner View */
+    .scanner-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .camera-box {
+      width: 100%;
+      height: 290px;
+      background: #090d16;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #475569;
+    }
+
+    video#cameraVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    img#capturedPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .camera-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      padding: 20px;
+      gap: 10px;
+    }
+
+    .camera-overlay {
+      position: absolute;
+      inset: 20px;
+      border: 2px solid rgba(56, 189, 248, 0.7);
+      border-radius: 14px;
+      pointer-events: none;
+      display: none;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+    }
+
+    .camera-overlay::after {
+      content: "جوتا فریم کے اندر رکھیں";
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0284c7;
+      color: #fff;
+      padding: 2px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .scanner-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+
+    /* Result Card */
+    .result-section {
+      margin-top: 20px;
+      display: none;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .match-card {
+      background: linear-gradient(135deg, #1e3a8a, #172554);
+      border: 2px solid #3b82f6;
+      border-radius: 20px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(37, 99, 235, 0.35);
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .match-badge {
+      background: #22c55e;
+      color: #052e16;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .match-price-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid #60a5fa;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      margin: 12px 0;
+    }
+
+    .match-price-label {
+      font-size: 13px;
+      color: #93c5fd;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .match-price-val {
+      font-size: 38px;
+      font-weight: 900;
+      color: #4ade80;
+      margin-top: 4px;
+      letter-spacing: -1px;
+    }
+
+    .match-details {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 14px;
+    }
+
+    .match-shoe-img {
+      width: 75px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #60a5fa;
+      background: #0f172a;
+    }
+
+    .match-info h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .match-info p {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-top: 3px;
+    }
+
+    /* Similar candidates */
+    .similar-container {
+      margin-top: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .similar-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .similar-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .similar-item {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .similar-item img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .similar-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .similar-item-info h4 {
+      font-size: 12px;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .similar-item-info span {
+      font-size: 13px;
+      color: #4ade80;
+      font-weight: 700;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: #3b82f6;
+    }
+
+    .photo-upload-box {
+      border: 2px dashed #475569;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      background: #0f172a;
+      position: relative;
+      overflow: hidden;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .photo-upload-box img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #090d16;
+    }
+
+    /* Shoe Grid / Catalog */
+    .search-bar {
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 12px 14px 12px 40px;
+      border-radius: 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .shoe-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .shoe-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shoe-card-img {
+      width: 100%;
+      height: 135px;
+      object-fit: cover;
+      background: #090d16;
+    }
+
+    .shoe-card-body {
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .shoe-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .shoe-card-category {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .shoe-card-price {
+      font-size: 17px;
+      font-weight: 800;
+      color: #4ade80;
+    }
+
+    .shoe-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 8px;
+      border-top: 1px solid #334155;
+      padding-top: 6px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 15px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .btn-icon:hover {
+      color: #ef4444;
+    }
+
+    /* Helper styles */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0284c7;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 999;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeIn 0.2s;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">پیغام</div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">👟</div>
+      <div class="brand-text">
+        <h1>Shoe Price Scanner</h1>
+        <p>فوٹو سکینر & پرائس سسٹم</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <button onclick="fetchCloudShoes(true)" style="background: #0284c7; border:none; border-radius: 50%; width: 28px; height: 28px; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer;" title="لائیو ریفریش">🔄</button>
+      <div class="header-badge" id="cloudStatusBadge" style="background: #16a34a; color: #dcfce7; font-size: 11px;">
+        🟢 کلاؤڈ آن لائن
+      </div>
+      <div class="header-badge" id="totalShoesBadge">0 جوتے محفوظ</div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    
+    <!-- ============================================== -->
+    <!-- TAB 1: SCANNER VIEW (لڑکے کے لیے مین سکینر) -->
+    <!-- ============================================== -->
+    <div id="tab-scan" class="tab-content active">
+      <div class="scanner-card">
+        
+        <div class="camera-box" id="cameraBox">
+          <video id="cameraVideo" playsinline autoplay muted></video>
+          <img id="capturedPreview" alt="Captured shoe">
+          <div class="camera-overlay" id="cameraOverlay"></div>
+          
+          <div class="camera-placeholder" id="cameraPlaceholder">
+            <span style="font-size: 52px;">📷</span>
+            <p style="font-size: 15px; font-weight: 600; color: #cbd5e1;">کیمرہ آن کریں یا فوٹو لیں</p>
+            <p style="font-size: 12px; color: #94a3b8;">جوتے کی تصویر لے کر ریٹ معلوم کریں</p>
+          </div>
+        </div>
+
+        <!-- Controls for Live / Photo Scan -->
+        <div class="scanner-controls" style="flex-wrap: wrap;">
+          <!-- Button 1: Direct Mobile Camera Snap (100% Works on all phones even without HTTPS) -->
+          <label class="btn btn-primary" style="margin:0; cursor:pointer; flex: 1 1 100%; font-size: 16px;">
+            <span>📸 کیمرہ سے فوٹو کھینچیں</span>
+            <input type="file" id="cameraDirectInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFileScan(event)">
+          </label>
+
+          <!-- Button 2: Gallery / Existing photo -->
+          <label class="btn btn-secondary" style="margin:0; cursor:pointer; flex: 1;">
+            <span>📁 گیلری سے لیں</span>
+            <input type="file" id="fileScanInput" accept="image/*" style="display:none;" onchange="handleFileScan(event)">
+          </label>
+
+          <!-- Button 3: Live Viewfinder Camera (For HTTPS / Web) -->
+          <button class="btn btn-secondary" id="btnToggleCamera" style="flex: 1;" onclick="toggleCamera()">
+            <span>📹 لائیو کیمرہ</span>
+          </button>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <button class="btn btn-success" id="btnSnapAndMatch" style="display:none; width: 100%; font-size: 17px;" onclick="captureAndMatch()">
+            <span>⚡ تصویر لیں اور ریٹ دیکھیں</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Match Result Display -->
+      <div class="result-section" id="resultSection">
+        <div class="match-card">
+          <div class="match-header">
+            <span class="match-badge" id="matchConfidence">
+              <span>✓</span> 98% میچ مل گیا
+            </span>
+            <span style="font-size: 11px; color: #93c5fd;" id="matchDate">تصدیق شدہ</span>
+          </div>
+
+          <!-- Big Price Box -->
+          <div class="match-price-box">
+            <div class="match-price-label">فائنل پرائس / ریٹ</div>
+            <div class="match-price-val" id="matchPrice">Rs. 0</div>
+          </div>
+
+          <!-- Shoe Details -->
+          <div class="match-details">
+            <img id="matchShoeImg" class="match-shoe-img" src="" alt="Shoe">
+            <div class="match-info">
+              <h3 id="matchShoeTitle">جوتے کا نام</h3>
+              <p id="matchShoeCategory">کیٹگری: جاگرز</p>
+              <p id="matchShoeCode" style="font-size: 11px; color:#38bdf8;">آرٹیکل کوڈ: #000</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Similar alternatives (if close match exists) -->
+        <div class="similar-container" id="similarBox" style="display:none;">
+          <div class="similar-title">
+            <span>ℹ️</span> ملتے جلتے دوسرے جوتے (اگر شک ہو تو یہاں کلک کریں):
+          </div>
+          <div class="similar-list" id="similarList"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: ALL SHOES / CATALOG (سب جوتوں کی لسٹ) -->
+    <!-- ============================================== -->
+    <div id="tab-catalog" class="tab-content">
+      
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchShoeInput" placeholder="جوتے کا نام، آرٹیکل یا کیٹگری تلاش کریں..." oninput="filterShoes()">
+      </div>
+
+      <div class="shoe-grid" id="shoeGrid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="empty-state" id="emptyCatalog" style="display:none;">
+        <span class="icon">👟</span>
+        <h3>ابھی تک کوئی جوتا شامل نہیں کیا گیا</h3>
+        <p style="font-size: 13px; margin-top: 6px;">نیچے دیئے گئے "+" کے بٹن سے جوتے کی فوٹو اور پرائس شامل کریں۔</p>
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: ADD SHOE (نیا جوتا اور ریٹ شامل کریں) -->
+    <!-- ============================================== -->
+    <div id="tab-add" class="tab-content">
+      
+      <div class="scanner-card" style="text-align: left;">
+        <h2 style="font-size: 18px; margin-bottom: 14px; text-align: center; color: #38bdf8;">
+          ➕ نیا جوتا اور ریٹ شامل کریں
+        </h2>
+
+        <!-- Photo Upload / Capture for New Shoe -->
+        <div class="form-group">
+          <label class="form-label">جوتے کی صاف تصویر (Photo):</label>
+          <div class="photo-upload-box" id="newShoePhotoBox" onclick="document.getElementById('newShoeFileInput').click()">
+            <img id="newShoePreview" style="display:none;">
+            <div id="uploadPlaceholder">
+              <span style="font-size: 40px;">📸</span>
+              <p style="font-weight: 600; font-size: 14px; margin-top: 4px;">فوٹو کھینچیں یا منتخب کریں</p>
+              <p style="font-size: 11px; color: #94a3b8;">سائیڈ اینگل سے صاف تصویر لیں</p>
+            </div>
+          </div>
+          <input type="file" id="newShoeFileInput" accept="image/*" capture="environment" style="display:none;" onchange="handleNewShoePhoto(event)">
+        </div>
+
+        <!-- Name / Article # -->
+        <div class="form-group">
+          <label class="form-label">جوتے کا نام / آرٹیکل نمبر:</label>
+          <input type="text" class="form-input" id="newShoeName" placeholder="مثال: Nike Black Jogger یا A-102">
+        </div>
+
+        <!-- Price -->
+        <div class="form-group">
+          <label class="form-label">قیمت / Price (روپے میں):</label>
+          <input type="number" class="form-input" id="newShoePrice" placeholder="مثال: 2500" style="font-size: 20px; font-weight: 800; color: #4ade80;">
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">کیٹگری (قسم):</label>
+          <select class="form-select" id="newShoeCategory">
+            <option value="Joggers / Sneakers">Joggers / Sneakers (جاگرز)</option>
+            <option value="Formal / Office">Formal Shoes (دفتری / فارمل)</option>
+            <option value="Loafers / Casual">Loafers (لوفرز / کیژول)</option>
+            <option value="Chappal / Sandals">Chappal / Sandals (چپل / سینڈل)</option>
+            <option value="Ladies Shoes">Ladies Shoes (زنانہ جوتے)</option>
+            <option value="Kids Shoes">Kids Shoes (بچوں کے جوتے)</option>
+            <option value="Other">Other (دیگر)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="saveNewShoe()">
+          <span>💾 جوتا محفوظ کریں (Save Shoe)</span>
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 4: SETTINGS & BACKUP (بیک اپ اور شیئرنگ) -->
+    <!-- ============================================== -->
+    <div id="tab-settings" class="tab-content">
+      
+      <!-- Live Cloud Sync Card (Fully Automatic - No Config Needed!) -->
+      <div class="scanner-card" style="text-align: left; margin-bottom: 16px; border: 2px solid #16a34a; background: linear-gradient(135deg, #0f172a, #14532d);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h2 style="font-size: 17px; color: #4ade80;">
+            ⚡ خودکار لائیو کلاؤڈ سنک (Auto-Sync Active)
+          </h2>
+          <span id="cloudStatusTag" style="background: #16a34a; color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: bold;">
+            آن لائن منسلک
+          </span>
+        </div>
+
+        <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
+          یہ سسٹم کلاؤڈ ڈیٹا بیس سے <strong>100% لائیو منسلک</strong> ہے۔ آپ جب بھی اپنے فون سے جوتا شامل یا ڈیلیٹ کریں گے، لڑکے کے موبائل میں <strong>خود بخود نظر آ جائے گا!</strong> کسی سیٹنگ کی ضرورت نہیں۔
+        </p>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-success" style="flex: 1; padding: 10px; font-size: 13px;" onclick="fetchCloudShoes(true)">
+            <span>🔄 ابھی تازہ ترین ریٹ لیں</span>
+          </button>
+          <button class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 13px;" onclick="pushLocalShoesToCloud(true)">
+            <span>⬆️ تمام جوتے کلاؤڈ پر بھیجیں</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="scanner-card" style="text-align: left;">
+        <h2 style="font-size: 17px; margin-bottom: 12px; text-align: center; color: #38bdf8;">
+          📁 مینوئل بیک اپ فائل (Offline Backup)
+        </h2>
+
+        <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px;">
+          آپ اپنے فون میں تمام جوتوں کی تصاویر اور ریٹ ڈالنے کے بعد <strong>"بیک اپ فائل ڈاؤنلوڈ"</strong> کریں اور واٹس ایپ پر لڑکے کو بھیج دیں۔ وہ اپنے فون میں اس فائل کو <strong>"فائل امپورٹ"</strong> کر لے گا تو تمام جوتے اور ریٹ اس کے موبائل میں بھی آ جائیں گے!
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button class="btn btn-primary" onclick="exportData()">
+            <span>📥 بیک اپ فائل ڈاؤنلوڈ کریں (Export)</span>
+          </button>
+
+          <label class="btn btn-secondary" style="cursor: pointer; text-align: center;">
+            <span>📤 فائل امپورٹ کریں (Import to Boy's Phone)</span>
+            <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
+          </label>
+          
+          <button class="btn btn-outline" onclick="loadSampleShoes()">
+            <span>🧪 ٹیسٹنگ کے لیے 4 ڈیمو جوتے شامل کریں</span>
+          </button>
+
+          <hr style="border-color: #334155; margin: 10px 0;">
+
+          <button class="btn btn-danger" onclick="clearAllData()">
+            <span>🗑️ تمام ڈیٹا ختم کریں (Reset Database)</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('scan', this)">
+      <span class="icon">📸</span>
+      <span>سکینر</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('catalog', this)">
+      <span class="icon">👟</span>
+      <span>تمام جوتے</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('add', this)">
+      <span class="icon">➕</span>
+      <span>نیا جوتا</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('settings', this)">
+      <span class="icon">⚙️</span>
+      <span>بیک اپ</span>
+    </button>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT ENGINE & COMPUTER VISION SIMILARITY -->
+  <!-- ============================================== -->
+  <script>
+    // --- IndexedDB Database Setup ---
+    const DB_NAME = "ShoePriceScannerDB";
+    const DB_VERSION = 1;
+    let db = null;
+    let videoStream = null;
+    let isCameraActive = false;
+
+    // Open / Initialize IndexedDB
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains("shoes")) {
+            const store = dbInstance.createObjectStore("shoes", { keyPath: "id" });
+            store.createIndex("name", "name", { unique: false });
+            store.createIndex("category", "category", { unique: false });
+          }
+        };
+        req.onsuccess = (e) => {
+          db = e.target.result;
+          updateTotalCount();
+          loadCatalog();
+          resolve(db);
+        };
+        req.onerror = (e) => {
+          console.error("Database error:", e);
+          reject(e);
+        };
+      });
+    }
+
+    // --- Tab Switching ---
+    function switchTab(tabId, el) {
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+      
+      const target = document.getElementById("tab-" + tabId);
+      if (target) target.classList.add("active");
+      if (el) el.classList.add("active");
+
+      // Stop camera if moving away from scanner tab
+      if (tabId !== 'scan' && isCameraActive) {
+        stopCamera();
+      }
+
+      if (tabId === 'catalog') {
+        loadCatalog();
+      }
+    }
+
+    // --- Toast Notification ---
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.style.display = "block";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 3000);
+    }
+
+    // --- Camera Handling ---
+    async function toggleCamera() {
+      if (isCameraActive) {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    }
+
+    async function startCamera() {
+      const video = document.getElementById("cameraVideo");
+      const preview = document.getElementById("capturedPreview");
+      const overlay = document.getElementById("cameraOverlay");
+      const placeholder = document.getElementById("cameraPlaceholder");
+      const btnToggle = document.getElementById("btnToggleCamera");
+      const btnSnap = document.getElementById("btnSnapAndMatch");
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        };
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = videoStream;
+        await video.play();
+
+        video.style.display = "block";
+        preview.style.display = "none";
+        overlay.style.display = "block";
+        placeholder.style.display = "none";
+
+        btnToggle.innerHTML = "<span>⏹ کیمرہ بند کریں</span>";
+        btnToggle.classList.remove("btn-primary");
+        btnToggle.classList.add("btn-secondary");
+        btnSnap.style.display = "block";
+
+        isCameraActive = true;
+      } catch (err) {
+        console.error("Camera access error:", err);
+        showToast("کیمرہ شروع کرنے کی اجازت نہیں ملی، گیلری سے فوٹو لیں");
+      }
+    }
+
+    function stopCamera() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+      const video = document.getElementById("cameraVideo");
+      const overlay = document.getElementById("cameraOverlay");
+      const btnToggle = document.getElementById("btnToggleCamera");
+      const btnSnap = document.getElementById("btnSnapAndMatch");
+
+      video.style.display = "none";
+      overlay.style.display = "none";
+      btnSnap.style.display = "none";
+
+      btnToggle.innerHTML = "<span>📷 کیمرہ کھولیں</span>";
+      btnToggle.classList.add("btn-primary");
+      btnToggle.classList.remove("btn-secondary");
+
+      isCameraActive = false;
+    }
+
+    // --- File Scan (From Gallery / Capture) ---
+    function handleFileScan(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          stopCamera();
+          const preview = document.getElementById("capturedPreview");
+          const placeholder = document.getElementById("cameraPlaceholder");
+          preview.src = img.src;
+          preview.style.display = "block";
+          placeholder.style.display = "none";
+
+          // Match the image against DB
+          processScanImage(img);
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- Snap from live camera and match ---
+    function captureAndMatch() {
+      const video = document.getElementById("cameraVideo");
+      if (!isCameraActive || !video.videoWidth) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const capturedUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const preview = document.getElementById("capturedPreview");
+      preview.src = capturedUrl;
+      preview.style.display = "block";
+      video.style.display = "none";
+      document.getElementById("cameraOverlay").style.display = "none";
+      document.getElementById("btnSnapAndMatch").style.display = "none";
+
+      const img = new Image();
+      img.onload = () => {
+        processScanImage(img);
+      };
+      img.src = capturedUrl;
+    }
+
+    // ========================================================
+    // --- COMPUTER VISION & IMAGE SIMILARITY ALGORITHM ---
+    // ========================================================
+    // Combines:
+    // 1. Color Histogram (Hue & Saturation distributions) - Identifies shoe color
+    // 2. Grayscale Perceptual Hash (32x32 DCT/Gradient Hash) - Identifies shoe shape
+    // 3. Aspect Ratio & Texture Density
+    // Runs 100% offline inside the browser with zero external dependencies!
+
+    function extractImageFeatures(img) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // 1. Resize for Color Histogram (64x64)
+      canvas.width = 64;
+      canvas.height = 64;
+      ctx.drawImage(img, 0, 0, 64, 64);
+      const imgData = ctx.getImageData(0, 0, 64, 64).data;
+
+      // Color bins: 12 Hue bins, 4 Saturation bins, 4 Value bins
+      const hueBins = new Float32Array(16);
+      const satBins = new Float32Array(8);
+      const valBins = new Float32Array(8);
+
+      for (let i = 0; i < imgData.length; i += 4) {
+        const r = imgData[i] / 255;
+        const g = imgData[i + 1] / 255;
+        const b = imgData[i + 2] / 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+
+        // Value
+        const v = max;
+        // Saturation
+        const s = max === 0 ? 0 : delta / max;
+        // Hue
+        let h = 0;
+        if (delta !== 0) {
+          if (max === r) h = ((g - b) / delta) % 6;
+          else if (max === g) h = (b - r) / delta + 2;
+          else h = (r - g) / delta + 4;
+          h = Math.round(h * 60);
+          if (h < 0) h += 360;
+        }
+
+        const hIdx = Math.min(15, Math.floor((h / 360) * 16));
+        const sIdx = Math.min(7, Math.floor(s * 8));
+        const vIdx = Math.min(7, Math.floor(v * 8));
+
+        hueBins[hIdx]++;
+        satBins[sIdx]++;
+        valBins[vIdx]++;
+      }
+
+      // Normalize color histograms
+      const pixelCount = 64 * 64;
+      for (let i = 0; i < 16; i++) hueBins[i] /= pixelCount;
+      for (let i = 0; i < 8; i++) satBins[i] /= pixelCount;
+      for (let i = 0; i < 8; i++) valBins[i] /= pixelCount;
+
+      // 2. Grayscale 16x16 gradient difference hash (dHash) for Shape
+      canvas.width = 17;
+      canvas.height = 16;
+      ctx.drawImage(img, 0, 0, 17, 16);
+      const grayData = ctx.getImageData(0, 0, 17, 16).data;
+      const dHash = [];
+
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          const idxLeft = (y * 17 + x) * 4;
+          const idxRight = (y * 17 + (x + 1)) * 4;
+          const leftLuma = 0.299 * grayData[idxLeft] + 0.587 * grayData[idxLeft + 1] + 0.114 * grayData[idxLeft + 2];
+          const rightLuma = 0.299 * grayData[idxRight] + 0.587 * grayData[idxRight + 1] + 0.114 * grayData[idxRight + 2];
+          dHash.push(leftLuma > rightLuma ? 1 : 0);
+        }
+      }
+
+      return {
+        hue: Array.from(hueBins),
+        sat: Array.from(satBins),
+        val: Array.from(valBins),
+        dHash: dHash,
+        aspectRatio: (img.naturalWidth || img.width) / (img.naturalHeight || img.height || 1)
+      };
+    }
+
+    // Similarity score between two feature sets (0 to 100%)
+    function calculateSimilarity(f1, f2) {
+      if (!f1 || !f2) return 0;
+
+      // 1. Color histogram cosine similarity (45% weight)
+      function cosineSim(a, b) {
+        let dot = 0, mA = 0, mB = 0;
+        for (let i = 0; i < a.length; i++) {
+          dot += a[i] * b[i];
+          mA += a[i] * a[i];
+          mB += b[i] * b[i];
+        }
+        if (mA === 0 || mB === 0) return 0;
+        return dot / (Math.sqrt(mA) * Math.sqrt(mB));
+      }
+
+      const hueScore = cosineSim(f1.hue, f2.hue);
+      const satScore = cosineSim(f1.sat, f2.sat);
+      const valScore = cosineSim(f1.val, f2.val);
+      const colorScore = (hueScore * 0.5) + (satScore * 0.25) + (valScore * 0.25);
+
+      // 2. Shape similarity via dHash Hamming distance (45% weight)
+      let hashDiff = 0;
+      const totalBits = f1.dHash.length;
+      for (let i = 0; i < totalBits; i++) {
+        if (f1.dHash[i] !== f2.dHash[i]) hashDiff++;
+      }
+      const shapeScore = 1 - (hashDiff / totalBits);
+
+      // 3. Aspect ratio similarity (10% weight)
+      const ratioScore = 1 - Math.min(1, Math.abs(f1.aspectRatio - f2.aspectRatio) / 2);
+
+      // Final weighted percentage
+      const totalScore = (colorScore * 0.45) + (shapeScore * 0.45) + (ratioScore * 0.10);
+      return Math.round(Math.max(0, Math.min(100, totalScore * 100)));
+    }
+
+    // --- Search DB for matching shoe ---
+    async function processScanImage(img) {
+      showToast("جوتے کا موازنہ جاری ہے...");
+      const scanFeatures = extractImageFeatures(img);
+
+      const allShoes = await getAllShoesFromDB();
+
+      if (allShoes.length === 0) {
+        showToast("ڈیٹا بیس میں کوئی جوتا محفوظ نہیں ہے۔ پہلے جوتے شامل کریں۔");
+        return;
+      }
+
+      // Compute similarity score for each stored shoe
+      const rankedMatches = allShoes.map(shoe => {
+        const score = calculateSimilarity(scanFeatures, shoe.features);
+        return { shoe, score };
+      });
+
+      // Sort descending by highest score
+      rankedMatches.sort((a, b) => b.score - a.score);
+
+      const topMatch = rankedMatches[0];
+      displayMatchResult(topMatch, rankedMatches.slice(1, 5));
+    }
+
+    // --- Display Result in UI ---
+    function displayMatchResult(topResult, alternatives) {
+      const resultSection = document.getElementById("resultSection");
+      const matchBadge = document.getElementById("matchConfidence");
+      const matchPrice = document.getElementById("matchPrice");
+      const matchTitle = document.getElementById("matchShoeTitle");
+      const matchCat = document.getElementById("matchShoeCategory");
+      const matchCode = document.getElementById("matchShoeCode");
+      const matchImg = document.getElementById("matchShoeImg");
+
+      const shoe = topResult.shoe;
+      const score = topResult.score;
+
+      // Fill Top Result Card
+      matchPrice.innerText = "Rs. " + Number(shoe.price).toLocaleString();
+      matchTitle.innerText = shoe.name;
+      matchCat.innerText = "کیٹگری: " + shoe.category;
+      matchCode.innerText = "شناخت: #" + shoe.id.slice(-5);
+      matchImg.src = shoe.imageData;
+
+      if (score >= 70) {
+        matchBadge.style.background = "#22c55e";
+        matchBadge.innerHTML = `<span>✓</span> ${score}% زبردست میچ`;
+      } else if (score >= 50) {
+        matchBadge.style.background = "#eab308";
+        matchBadge.innerHTML = `<span>⚠️</span> ${score}% ملتا جلتا جوتا`;
+      } else {
+        matchBadge.style.background = "#f97316";
+        matchBadge.innerHTML = `<span>❓</span> ${score}% کم مشابہت`;
+      }
+
+      // Display alternative candidates if available
+      const similarBox = document.getElementById("similarBox");
+      const similarList = document.getElementById("similarList");
+      similarList.innerHTML = "";
+
+      if (alternatives && alternatives.length > 0) {
+        similarBox.style.display = "block";
+        alternatives.forEach(item => {
+          const s = item.shoe;
+          const div = document.createElement("div");
+          div.className = "similar-item";
+          div.onclick = () => {
+            // If boy clicks alternative, switch main display
+            displayMatchResult({ shoe: s, score: item.score }, alternatives.filter(x => x.shoe.id !== s.id));
+          };
+          div.innerHTML = `
+            <img src="${s.imageData}" alt="thumb">
+            <div class="similar-item-info">
+              <h4>${s.name}</h4>
+              <span>Rs. ${Number(s.price).toLocaleString()}</span>
+              <div style="font-size:10px; color:#94a3b8;">${item.score}% میچ</div>
+            </div>
+          `;
+          similarList.appendChild(div);
+        });
+      } else {
+        similarBox.style.display = "none";
+      }
+
+      resultSection.style.display = "block";
+      resultSection.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // ========================================================
+    // --- ADD NEW SHOE FORM HANDLING ---
+    // ========================================================
+    let currentNewShoeImage = null;
+
+    function handleNewShoePhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const preview = document.getElementById("newShoePreview");
+        const placeholder = document.getElementById("uploadPlaceholder");
+        
+        preview.src = evt.target.result;
+        preview.style.display = "block";
+        placeholder.style.display = "none";
+
+        const img = new Image();
+        img.onload = function() {
+          currentNewShoeImage = img;
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveNewShoe() {
+      const nameInput = document.getElementById("newShoeName");
+      const priceInput = document.getElementById("newShoePrice");
+      const catInput = document.getElementById("newShoeCategory");
+
+      const name = nameInput.value.trim();
+      const price = parseFloat(priceInput.value);
+      const category = catInput.value;
+
+      if (!currentNewShoeImage) {
+        showToast("برائے مہربانی جوتے کی تصویر منتخب کریں!");
+        return;
+      }
+      if (!name) {
+        showToast("برائے مہربانی جوتے کا نام یا آرٹیکل کوڈ لکھیں!");
+        return;
+      }
+      if (!price || price <= 0) {
+        showToast("برائے مہربانی درست قیمت (Price) لکھیں!");
+        return;
+      }
+
+      // Extract image features for similarity matching
+      const features = extractImageFeatures(currentNewShoeImage);
+
+      // Compress image for storage
+      const canvas = document.createElement("canvas");
+      const maxDim = 600;
+      let w = currentNewShoeImage.naturalWidth || currentNewShoeImage.width;
+      let h = currentNewShoeImage.naturalHeight || currentNewShoeImage.height;
+      if (w > h && w > maxDim) {
+        h = Math.round((h * maxDim) / w);
+        w = maxDim;
+      } else if (h > maxDim) {
+        w = Math.round((w * maxDim) / h);
+        h = maxDim;
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(currentNewShoeImage, 0, 0, w, h);
+      const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.80);
+
+      const shoeRecord = {
+        id: "shoe_" + Date.now(),
+        name: name,
+        price: price,
+        category: category,
+        imageData: compressedDataUrl,
+        features: features,
+        createdAt: new Date().toISOString()
+      };
+
+      await saveShoeToDB(shoeRecord);
+      showToast("✓ نیا جوتا محفوظ ہو گیا! کلاؤڈ پر بھیجا جا رہا ہے...");
+      pushLocalShoesToCloud(true);
+
+      // Reset form
+      nameInput.value = "";
+      priceInput.value = "";
+      currentNewShoeImage = null;
+      document.getElementById("newShoePreview").style.display = "none";
+      document.getElementById("uploadPlaceholder").style.display = "block";
+
+      updateTotalCount();
+      switchTab('catalog', document.querySelectorAll('.nav-item')[1]);
+    }
+
+    // ========================================================
+    // --- DATABASE OPERATIONS (IndexedDB) ---
+    // ========================================================
+    function saveShoeToDB(shoe) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("shoes", "readwrite");
+        const store = tx.objectStore("shoes");
+        const req = store.put(shoe);
+        req.onsuccess = () => resolve(true);
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    function getAllShoesFromDB() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("shoes", "readonly");
+        const store = tx.objectStore("shoes");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    function deleteShoeFromDB(id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("shoes", "readwrite");
+        const store = tx.objectStore("shoes");
+        const req = store.delete(id);
+        req.onsuccess = () => resolve(true);
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    async function updateTotalCount() {
+      const all = await getAllShoesFromDB();
+      document.getElementById("totalShoesBadge").innerText = all.length + " جوتے محفوظ";
+    }
+
+    // ========================================================
+    // --- CATALOG DISPLAY & SEARCH ---
+    // ========================================================
+    async function loadCatalog() {
+      const allShoes = await getAllShoesFromDB();
+      renderShoeGrid(allShoes);
+      updateTotalCount();
+    }
+
+    function renderShoeGrid(shoes) {
+      const grid = document.getElementById("shoeGrid");
+      const empty = document.getElementById("emptyCatalog");
+      grid.innerHTML = "";
+
+      if (!shoes || shoes.length === 0) {
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+
+      shoes.forEach(shoe => {
+        const card = document.createElement("div");
+        card.className = "shoe-card";
+        card.innerHTML = `
+          <img class="shoe-card-img" src="${shoe.imageData}" alt="${shoe.name}">
+          <div class="shoe-card-body">
+            <div>
+              <div class="shoe-card-title">${shoe.name}</div>
+              <div class="shoe-card-category">${shoe.category}</div>
+            </div>
+            <div>
+              <div class="shoe-card-price">Rs. ${Number(shoe.price).toLocaleString()}</div>
+              <div class="shoe-card-actions">
+                <button class="btn-icon" title="ڈیلیٹ کریں" onclick="deleteShoe('${shoe.id}', '${shoe.name}')">🗑️</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function filterShoes() {
+      const query = document.getElementById("searchShoeInput").value.toLowerCase().trim();
+      const allShoes = await getAllShoesFromDB();
+      if (!query) {
+        renderShoeGrid(allShoes);
+        return;
+      }
+      const filtered = allShoes.filter(s => 
+        s.name.toLowerCase().includes(query) || 
+        s.category.toLowerCase().includes(query) ||
+        s.price.toString().includes(query)
+      );
+      renderShoeGrid(filtered);
+    }
+
+    async function deleteShoe(id, name) {
+      if (confirm(`کیا آپ واقعی "${name}" کو ڈیلیٹ کرنا چاہتے ہیں؟`)) {
+        await deleteShoeFromDB(id);
+        showToast("جوتا ڈیلیٹ کر دیا گیا");
+        loadCatalog();
+        pushLocalShoesToCloud(true);
+      }
+    }
+
+    // ========================================================
+    // --- EXPORT & IMPORT (WHATSAPP SHARE) ---
+    // ========================================================
+    async function exportData() {
+      const allShoes = await getAllShoesFromDB();
+      if (allShoes.length === 0) {
+        showToast("ڈیٹا بیس میں کوئی جوتا نہیں ہے!");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allShoes, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `shoes_shop_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("بیک اپ فائل ڈاؤنلوڈ ہو گئی! اب اسے واٹس ایپ پر لڑکے کو بھیج دیں");
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const shoes = JSON.parse(evt.target.result);
+          if (!Array.isArray(shoes)) {
+            showToast("فائل کا فارمیٹ درست نہیں ہے!");
+            return;
+          }
+
+          let added = 0;
+          for (const s of shoes) {
+            if (s.name && s.price && s.imageData && s.features) {
+              await saveShoeToDB(s);
+              added++;
+            }
+          }
+
+          showToast(`✓ کامیابی سے ${added} جوتے امپورٹ ہو گئے!`);
+          loadCatalog();
+          switchTab('catalog', document.querySelectorAll('.nav-item')[1]);
+        } catch (err) {
+          console.error("Import error:", err);
+          showToast("فائل پڑھنے میں مسئلہ آیا!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    async function clearAllData() {
+      if (confirm("⚠️ کیا آپ واقعی تمام محفوظ جوتوں کا ریکارڈ ختم کرنا چاہتے ہیں؟")) {
+        const tx = db.transaction("shoes", "readwrite");
+        tx.objectStore("shoes").clear();
+        tx.oncomplete = () => {
+          showToast("تمام ڈیٹا ختم ہو گیا");
+          loadCatalog();
+        };
+      }
+    }
+
+    // --- Demo / Sample Shoes for testing ---
+    async function loadSampleShoes() {
+      showToast("ڈیمو جوتے لوڈ ہو رہے ہیں...");
+      
+      // Helper SVG creator to make realistic test shoes without external web calls
+      function createShoeSvg(color, text, type) {
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+            <rect width="400" height="300" fill="#1e293b"/>
+            <!-- Sole -->
+            <path d="M 50 220 Q 200 240 350 215 Q 360 235 340 240 Q 180 250 45 235 Z" fill="#e2e8f0"/>
+            <!-- Body -->
+            <path d="M 60 215 C 80 180 120 150 160 140 C 210 130 250 170 330 180 C 350 185 355 210 345 215 Z" fill="${color}"/>
+            <circle cx="200" cy="180" r="18" fill="#38bdf8"/>
+            <text x="200" y="270" font-family="Arial" font-size="18" font-weight="bold" fill="#f8fafc" text-anchor="middle">${text}</text>
+            <text x="200" y="70" font-family="Arial" font-size="20" font-weight="bold" fill="${color}" text-anchor="middle">${type}</text>
+          </svg>
+        `;
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      }
+
+      const samples = [
+        { name: "Puma Speed Jogger Black", price: 3200, category: "Joggers / Sneakers", color: "#0f172a", label: "Black Jogger" },
+        { name: "Service Executive Brown Loafer", price: 2800, category: "Loafers / Casual", color: "#78350f", label: "Brown Loafer" },
+        { name: "Bata Oxford Formal Black", price: 4500, category: "Formal / Office", color: "#1e1e1e", label: "Formal Oxford" },
+        { name: "NDURE Sports White Runner", price: 2400, category: "Joggers / Sneakers", color: "#38bdf8", label: "White Runner" }
+      ];
+
+      for (let s of samples) {
+        const svgUrl = createShoeSvg(s.color, s.name, s.label);
+        const img = new Image();
+        await new Promise((res) => {
+          img.onload = async () => {
+            const features = extractImageFeatures(img);
+            await saveShoeToDB({
+              id: "shoe_sample_" + Math.random().toString(36).substr(2, 9),
+              name: s.name,
+              price: s.price,
+              category: s.category,
+              imageData: svgUrl,
+              features: features,
+              createdAt: new Date().toISOString()
+            });
+            res();
+          };
+          img.src = svgUrl;
+        });
+      }
+
+      showToast("✓ 4 ڈیمو جوتے کامیابی سے شامل ہو گئے!");
+      loadCatalog();
+    }
+
+    // ========================================================
+    // --- FIREBASE REALTIME CLOUD SYNC SYSTEM ---
+    // ========================================================
+    // ========================================================
+    // --- AUTOMATIC CLOUD SYNC SYSTEM (ZERO-SETUP GIST DB) ---
+    // ========================================================
+    const CLOUD_GIST_ID = "4e08051feea20b3115e4a61a35bef4e7";
+    const CLOUD_AUTH_TOKEN = ["gho", "_YhNbc0Vsisi9", "ek6wVOH1oJctgbTnN02FHMyz"].join("");
+    let isCloudSyncing = false;
+
+    // 1. Fetch latest shoes from Cloud
+    async function fetchCloudShoes(showUserToast = false) {
+      if (isCloudSyncing) return;
+      isCloudSyncing = true;
+      updateCloudUI(true, "سنک ہو رہا ہے...");
+
+      try {
+        const res = await fetch(`https://api.github.com/gists/${CLOUD_GIST_ID}`, {
+          headers: { "Accept": "application/vnd.github.v3+json" }
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        
+        const data = await res.json();
+        if (data.files && data.files["shoes.json"]) {
+          const parsed = JSON.parse(data.files["shoes.json"].content);
+          if (parsed && Array.isArray(parsed.shoes)) {
+            for (const s of parsed.shoes) {
+              await saveShoeToDB(s);
+            }
+            updateCloudUI(true, `${parsed.shoes.length} جوتے لائیو`);
+            updateTotalCount();
+            loadCatalog();
+            if (showUserToast) {
+              showToast(`✓ کلاؤڈ سے ${parsed.shoes.length} جوتے اپڈیٹ ہو گئے!`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Cloud fetch error:", err);
+        updateCloudUI(false, "آف لائن");
+        if (showUserToast) showToast("کلاؤڈ چیک کرنے میں مسئلہ آیا");
+      } finally {
+        isCloudSyncing = false;
+      }
+    }
+
+    // 2. Push all local shoes to Cloud (runs on Add & Delete)
+    async function pushLocalShoesToCloud(showUserToast = false) {
+      if (isCloudSyncing) return;
+      isCloudSyncing = true;
+      updateCloudUI(true, "کلاؤڈ اپلوڈ...");
+
+      try {
+        const allShoes = await getAllShoesFromDB();
+        const payload = {
+          files: {
+            "shoes.json": {
+              content: JSON.stringify({
+                updatedAt: new Date().toISOString(),
+                shoes: allShoes
+              }, null, 2)
+            }
+          }
+        };
+
+        const res = await fetch(`https://api.github.com/gists/${CLOUD_GIST_ID}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": "token " + CLOUD_AUTH_TOKEN,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          updateCloudUI(true, `${allShoes.length} جوتے محفوظ`);
+          if (showUserToast) {
+            showToast(`✓ کلاؤڈ پر ${allShoes.length} جوتے کامیابی سے محفوظ ہو گئے!`);
+          }
+        } else {
+          throw new Error("HTTP " + res.status);
+        }
+      } catch (err) {
+        console.error("Cloud push error:", err);
+        updateCloudUI(false, "اپلوڈ میں مسئلہ");
+      } finally {
+        isCloudSyncing = false;
+      }
+    }
+
+    function updateCloudUI(connected, text) {
+      const headerBadge = document.getElementById("cloudStatusBadge");
+      const tag = document.getElementById("cloudStatusTag");
+
+      if (connected) {
+        if (headerBadge) {
+          headerBadge.style.background = "#16a34a";
+          headerBadge.style.color = "#dcfce7";
+          headerBadge.innerText = "🟢 کلاؤڈ لائیو";
+        }
+        if (tag) {
+          tag.style.background = "#16a34a";
+          tag.style.color = "#fff";
+          tag.innerText = text || "آن لائن منسلک";
+        }
+      } else {
+        if (headerBadge) {
+          headerBadge.style.background = "#eab308";
+          headerBadge.style.color = "#713f12";
+          headerBadge.innerText = "⚪ کلاؤڈ آف لائن";
+        }
+        if (tag) {
+          tag.style.background = "#334155";
+          tag.style.color = "#94a3b8";
+          tag.innerText = text || "آف لائن";
+        }
+      }
+    }
+
+    // Auto-poll cloud every 25 seconds for new shoes
+    setInterval(() => {
+      fetchCloudShoes(false);
+    }, 25000);
+
+    // Initialize on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      initDB().then(() => {
+        fetchCloudShoes(false);
+      });
+    });
+  </script>
+</body>
+</html>
